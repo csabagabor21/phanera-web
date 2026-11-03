@@ -70,7 +70,7 @@
 </script>
 <link rel="preload" href="/fonts/InstrumentSans-VF.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Newsreader-Italic-VF.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/css/style.css?v=20261103s">
+<link rel="stylesheet" href="/css/style.css?v=20261103u">
 <script>
   // korai beállítás: JS van, csökkentett mozgás, nyelv (villanás nélkül).
   // Az /en/ URL mindig angol (a keresők ezt indexelik); a gyökérben a mentett nyelvválasztás érvényes.
@@ -269,36 +269,43 @@
         <span data-l="en" lang="en">Plasma touches. <span class="soft">The nozzle doesn’t.</span></span>
       </h2>
     </div>
-    <div class="touch-fig" aria-hidden="true"><figure data-a=".1 .26">
-      <svg viewBox="0 0 800 340">
-        <defs>
-          <linearGradient id="fadeup" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#000"/><stop offset=".3" stop-color="#fff"/></linearGradient>
-          <linearGradient id="bodyfill" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stop-color="#d9d9de"/><stop offset=".5" stop-color="#f4f4f6"/><stop offset="1" stop-color="#bdbdc3"/>
-          </linearGradient>
-        </defs>
-        <!-- eszköz: tengelye 65°-ban, az arc a felszínnel párhuzamos -->
-        <mask id="bodyfade"><rect x="0" y="-60" width="800" height="400" fill="url(#fadeup)"/></mask>
-        <g mask="url(#bodyfade)"><polygon class="t-body" points="362,236 439,236 312,-36 235,-36" fill="url(#bodyfill)"/></g>
-        <line class="t-face" x1="362" y1="236" x2="439" y2="236"/>
-        <!-- sapka: rögzített távolság -->
-        <path class="t-cap" d="M356 236 L350 292 M445 236 L451 292"/>
-        <!-- plazma (lapos ibolya, színátmenet nélkül) -->
-        <ellipse class="t-plasma" cx="400" cy="266" rx="58" ry="30"/>
-        <ellipse class="t-plasma t-plasma--core" cx="400" cy="262" rx="26" ry="12"/>
-        <!-- tengely és a 65°-os íróállás -->
-        <line class="t-axis" x1="300" y1="22" x2="426" y2="292"/>
-        <path class="t-arc" d="M336 292 A90 90 0 0 1 388 210.4"/>
-        <text class="t-lab t-lab--muted" x="292" y="262" text-anchor="end">65°</text>
-        <!-- felszín -->
-        <line class="t-skin" x1="70" y1="292" x2="730" y2="292"/>
-        <!-- méret -->
-        <path class="t-dim" d="M540 236 V292 M532 236 H548 M532 292 H548"/>
-        <text class="t-lab" x="562" y="270"><tspan data-l="hu" lang="hu">mindig ugyanannyi</tspan><tspan data-l="en" lang="en">always the same</tspan></text>
-        <text class="t-lab t-lab--muted" x="730" y="318" text-anchor="end"><tspan data-l="hu" lang="hu">felszín</tspan><tspan data-l="en" lang="en">surface</tspan></text>
-        <text class="t-lab t-lab--muted" x="470" y="214"><tspan data-l="hu" lang="hu">sapka</tspan><tspan data-l="en" lang="en">cap</tspan></text>
-      </svg>
+    <!-- ERINTES:BEGIN (render/erintes_3d/make_overlay.py generálja – ne kézzel) -->
+    <div class="touch-fig"><figure class="touch-media" data-a=".08 .22">
+    <picture>
+      <source media="(max-width: 820px)" srcset="/img/erintes_m@800.webp?v=20261103c 800w, /img/erintes_m.webp?v=20261103c 1200w" sizes="100vw" width="1200" height="1080">
+      <img src="/img/erintes_d.webp?v=20261103c" srcset="/img/erintes_d@1600.webp?v=20261103c 1600w, /img/erintes_d.webp?v=20261103c 2400w" sizes="(max-width: 1200px) 94vw, 1100px" width="2400" height="1000" alt="Render: Phanera One held at 65° above a stylised, warm-toned surface. The spacer cap (shown cut away) rests on the surface; a gap remains between the nozzle and the surface." data-alt-hu="Render: a Phanera One 65°-os szögben áll egy stilizált, meleg tónusú felszín fölött. A távtartó sapka (itt félbevágva) a felszínen ül; a fúvóka és a felszín között rés marad." data-alt-en="Render: Phanera One held at 65° above a stylised, warm-toned surface. The spacer cap (shown cut away) rests on the surface; a gap remains between the nozzle and the surface." loading="lazy" decoding="async">
+    </picture>
+    <svg class="touch-ov touch-ov--d" viewBox="0 0 2400 1000" aria-hidden="true" focusable="false">
+      <ellipse class="tv-plasma" cx="1416" cy="639.1" rx="75.7" ry="42.1" transform="rotate(64.8 1416 639.1)"/>
+      <ellipse class="tv-plasma tv-plasma--spot" cx="1440" cy="690" rx="89" ry="14.2"/>
+      <line class="tv-line" x1="889.9" y1="690" x2="1241.6" y2="690"/>
+      <line class="tv-axis" x1="1440" y1="690" x2="1115.1" y2="0"/>
+      <circle class="tv-dot" cx="1440" cy="690" r="8.9"/>
+      <path class="tv-line" d="M1035.5 690 A404.5 404.5 0 0 1 1267.7 324.1"/>
+      <text class="tv-fig" x="1052" y="443.9" text-anchor="middle" dominant-baseline="middle" font-size="51">65°</text>
+      <path class="tv-dim" d="M1411.5 588.2 H1710.2 M1641.7 690 H1710.2 M1695.7 588.2 V690 M1681.1 602.7 L1710.2 573.6 M1681.1 704.6 L1710.2 675.4"/>
+      <text class="tv-lab" x="1728" y="639.1" font-size="34" dominant-baseline="middle"><tspan data-l="hu" lang="hu">mindig ugyanannyi</tspan><tspan data-l="en" lang="en">always the same</tspan></text>
+      <path class="tv-lead" d="M1605.2 476 L1684.4 396.7 H1741.1"/>
+      <text class="tv-lab" x="1760.5" y="396.7" font-size="34" dominant-baseline="middle"><tspan data-l="hu" lang="hu">távtartó sapka</tspan><tspan data-l="en" lang="en">spacer cap</tspan></text>
+      <text class="tv-lab tv-lab--muted" x="889.9" y="732.5" font-size="31"><tspan data-l="hu" lang="hu">felszín</tspan><tspan data-l="en" lang="en">surface</tspan></text>
+    </svg>
+    <svg class="touch-ov touch-ov--m" viewBox="0 0 1200 1080" aria-hidden="true" focusable="false">
+      <ellipse class="tv-plasma" cx="580.4" cy="703.7" rx="61.9" ry="34.7" transform="rotate(64.8 580.4 703.7)"/>
+      <ellipse class="tv-plasma tv-plasma--spot" cx="600" cy="745.2" rx="73.4" ry="11.7"/>
+      <line class="tv-line" x1="159.4" y1="745.2" x2="438.1" y2="745.2"/>
+      <line class="tv-axis" x1="600" y1="745.2" x2="249.1" y2="0"/>
+      <circle class="tv-dot" cx="600" cy="745.2" r="7.3"/>
+      <path class="tv-line" d="M279.6 745.2 A320.4 320.4 0 0 1 463.5 455.3"/>
+      <text class="tv-fig" x="293.4" y="550.7" text-anchor="middle" dominant-baseline="middle" font-size="60">65°</text>
+      <path class="tv-dim" d="M576.9 662.1 H829.2 M764.6 745.2 H829.2 M817.2 662.1 V745.2 M805.1 674.1 L829.2 650.1 M805.1 757.2 L829.2 733.2"/>
+      <text class="tv-lab" x="843.9" y="678.9" font-size="40" dominant-baseline="middle"><tspan data-l="hu" lang="hu">mindig</tspan><tspan data-l="en" lang="en">always</tspan></text>
+      <text class="tv-lab" x="843.9" y="728.5" font-size="40" dominant-baseline="middle"><tspan data-l="hu" lang="hu">ugyanannyi</tspan><tspan data-l="en" lang="en">the same</tspan></text>
+      <path class="tv-lead" d="M735 570.3 L800.4 504.9 H847.1"/>
+      <text class="tv-lab" x="863.1" y="504.9" font-size="40" dominant-baseline="middle"><tspan data-l="hu" lang="hu">távtartó sapka</tspan><tspan data-l="en" lang="en">spacer cap</tspan></text>
+      <text class="tv-lab tv-lab--muted" x="159.4" y="795.2" font-size="36"><tspan data-l="hu" lang="hu">felszín</tspan><tspan data-l="en" lang="en">surface</tspan></text>
+    </svg>
     </figure></div>
+    <!-- ERINTES:END -->
     <div class="copy copy--touch-foot">
       <p class="body" data-a=".22 .34"><span data-l="hu" lang="hu">A sapka mindig ugyanakkora távolságra tartja a&nbsp;fejet. A&nbsp;felszínig csak a&nbsp;plazma jut el.</span><span data-l="en" lang="en">The cap holds the head at the same distance every time. Only the plasma reaches the surface.</span></p>
       <p class="note" data-a=".3 .42"><span data-l="hu" lang="hu">A levegőplazma ózont is termel. Ezért mérjük, és csak jól szellőző helyiségben dolgozunk vele.</span><span data-l="en" lang="en">Air plasma also makes ozone. So we measure it, and use it only in well-ventilated rooms.</span></p>
@@ -571,7 +578,7 @@
 
 <script src="/js/placeholder.js?v=20261103b" defer></script>
 <script src="/js/seq-engine.js?v=20261103a" defer></script>
-<script src="/js/page.js?v=20261103a" defer></script>
+<script src="/js/page.js?v=20261103b" defer></script>
 <script src="/js/newsletter.js?v=20261103nl" defer></script>
 </body>
 </html>

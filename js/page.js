@@ -306,6 +306,7 @@
         if (path !== want) history.replaceState(history.state, '', want + location.search + location.hash);
       }
     } catch (e) {}
+    document.querySelectorAll('[data-alt-hu]').forEach(function (im) { im.alt = im.getAttribute('data-alt-' + l) || im.alt; });
     if (byUser) { try { localStorage.setItem('phanera-lang', l); } catch (e) {} }
     measure();
   }

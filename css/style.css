@@ -484,19 +484,23 @@ html.rm .display--hero em .w, html.nojs .display--hero em { animation: none; bac
 /* ------------------------------------------- érintés nélkül (ábra) */
 .copy--touch { top: calc(var(--nav-h) + 8vh); text-align: center; display: grid; justify-items: center; gap: 14px; }
 .copy--touch .headline { font-size: calc(var(--fs-headline) * .84); max-width: 16em; }
-.touch-fig { position: absolute; left: 50%; top: 58%; width: min(820px, 92vw); margin: 0; transform: translate(-50%, -50%); }
-.touch-fig figure { margin: 0; }
-.touch-fig svg { width: 100%; height: auto; overflow: visible; }
-.t-body { stroke: rgba(0,0,0,.18); stroke-width: 1; }
-.t-face { stroke: var(--ink); stroke-width: 2.5; }
-.t-cap { stroke: var(--ink-2); stroke-width: 1.2; stroke-dasharray: 3 5; fill: none; }
-.t-skin { stroke: var(--ink); stroke-width: 1.2; }
-.t-dim { stroke: var(--ink-2); stroke-width: 1; fill: none; }
-.t-axis { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 10 4 2 4; opacity: .55; }
-.t-arc { stroke: var(--ink-2); stroke-width: 1; fill: none; }
-.t-plasma { fill: var(--violet); transform-origin: 400px 266px; transform: scale(calc(.6 + .4 * var(--p, 1))); opacity: calc(.08 + .14 * var(--p, 1)); }
-.t-lab { font-family: var(--sans); font-size: 17px; fill: var(--ink); letter-spacing: -.01em; }
-.t-lab--muted { fill: var(--ink-2); font-size: 15px; }
+/* v5 (2026-11-03): 3D-render + vektoros overlay (render/erintes_3d/) a régi SVG-ábra helyett */
+.touch-fig { position: absolute; left: 50%; top: 56%; width: min(1100px, 94vw, calc((100vh - 410px) * 2.4)); margin: 0; transform: translate(-50%, -50%); }
+.touch-media { position: relative; margin: 0; }
+.touch-media img { display: block; width: 100%; height: auto;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26%); mask-image: linear-gradient(to bottom, transparent 0, #000 26%); }
+.touch-ov { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.touch-ov--m { display: none; }
+.touch-ov .tv-line, .touch-ov .tv-dim, .touch-ov .tv-lead { fill: none; stroke: var(--ink); stroke-width: 1.1; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.touch-ov .tv-lead { stroke: var(--ink-2); }
+.touch-ov .tv-axis { stroke: var(--ink-2); stroke-width: 1; vector-effect: non-scaling-stroke; stroke-dasharray: 10 5 2 5; opacity: .75; }
+.touch-ov .tv-dot { fill: var(--ink); }
+.touch-ov .tv-lab { font-family: var(--sans); fill: var(--ink); letter-spacing: -.01em; font-weight: 450; }
+.touch-ov .tv-lab--muted { fill: var(--ink-2); }
+.touch-ov .tv-fig { font-family: var(--sans); fill: var(--ink); font-weight: 450; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.touch-ov .tv-plasma { fill: var(--violet);
+  opacity: calc(.06 + .12 * var(--p, 1)); }
+.touch-ov .tv-plasma--spot { opacity: calc(.08 + .16 * var(--p, 1)); }
 .copy--touch-foot { bottom: 7vh; display: grid; justify-items: center; text-align: center; gap: 14px; }
 .copy--touch-foot .body { max-width: 30em; }
 
@@ -565,7 +569,11 @@ html:not(.ready):not(.nojs):not(.rm) .copy--hero2 { visibility: hidden; }
   .colour--cyan { grid-column: 1; grid-row: 2; justify-self: end; }
   .colours__foot { grid-row: 4; }
   .copy--touch { top: calc(var(--nav-h) + 4vh); }
-  .touch-fig { top: 52%; width: 110vw; }
+  .touch-fig { top: 53%; width: min(100vw, calc((100svh - 400px) * 1.111)); }
+  .touch-ov--d { display: none; }
+  .touch-ov--m { display: block; }
+  .touch-media img { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 24%), linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%);
+    -webkit-mask-composite: source-in; mask-image: linear-gradient(to bottom, transparent 0, #000 24%), linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%); mask-composite: intersect; }
   .copy--touch-foot { bottom: 5vh; }
   .still { left: var(--sx-m); top: var(--sy-m); width: var(--w-m); }
   .copy--still-tl { top: calc(var(--nav-h) + 4vh); gap: 12px; }
@@ -604,7 +612,9 @@ html.rm .family-ticks, html.nojs .family-ticks { display: none; }
 html.rm .intro-fade, html.rm .intro-rise .w { animation: none; }
 html.rm .copy--mark, html.nojs .copy--mark { padding-top: 0; }
 html.rm .still, html.nojs .still { position: relative; left: auto; top: auto; width: 100%; transform: none; order: 2; }
-html.rm .touch-fig, html.nojs .touch-fig { position: relative; left: auto; top: auto; transform: none; margin: 0 auto; order: 2; }
+html.rm .touch-fig, html.nojs .touch-fig { position: relative; left: auto; top: auto; transform: none; margin: 0 auto; order: 2; width: min(1100px, 94vw); }
+@media (max-width: 820px) { html.rm .touch-fig, html.nojs .touch-fig { width: 100vw; } }
+html.rm .copy--touch-foot, html.nojs .copy--touch-foot { order: 3; }
 html.rm .colours, html.nojs .colours { position: relative; inset: auto; padding: calc(var(--nav-h) + 8vh) var(--gutter) 4vh; gap: 6vh; }
 html.rm .colour, html.rm .place, html.nojs .colour, html.nojs .place { --on: 1; }
 html.rm .callouts, html.nojs .callouts { display: none; }
