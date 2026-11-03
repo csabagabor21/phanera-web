@@ -13,7 +13,7 @@
   var form = document.getElementById('signup-form');
   if (!form) return;
 
-  var VENDOR = 'js/vendor/firestore-lite.js?v=12.19.0b';
+  var VENDOR = '/js/vendor/firestore-lite.js?v=12.19.0b';
   var CONFIG = {
     apiKey: 'AIzaSyDQIltakM31aM8uS1yCcV8aDAsSMKwnKVs',      // böngészőkulcs: hivatkozó + API szerint korlátozva
     authDomain: 'phanera-web.firebaseapp.com',

@@ -291,13 +291,22 @@
   }
 
   /* ---------------------------------------------------------- nyelvváltó */
-  function setLang(l) {
+  // v5 (2026-11-03): külön URL nyelvenként (/ = HU, /en/ = EN). Kattintásra a cím (URL) is átvált,
+  // újratöltés nélkül; a választás csak kattintásra mentődik.
+  function setLang(l, byUser) {
     lang = l; doc.dataset.lang = l; doc.lang = l;
     document.querySelectorAll('[data-set-lang]').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.dataset.setLang === l));
     });
-    document.title = l === 'en' ? 'Phanera One. The invisible, in colour.' : 'Phanera One. A láthatatlan, színesben.';
-    try { localStorage.setItem('phanera-lang', l); } catch (e) {}
+    document.title = l === 'en' ? 'Phanera One – 405 nm fluorescence imaging | Phanera' : 'Phanera One – fluoreszcens képalkotás 405 nm-en | Phanera';
+    try {
+      var path = location.pathname, root = path.replace(/en\/(index\.html)?$/, '').replace(/index\.html$/, '');
+      if (/\/$/.test(root) && (path === root || path === root + 'index.html' || path === root + 'en/' || path === root + 'en/index.html')) {
+        var want = l === 'en' ? root + 'en/' : root;
+        if (path !== want) history.replaceState(history.state, '', want + location.search + location.hash);
+      }
+    } catch (e) {}
+    if (byUser) { try { localStorage.setItem('phanera-lang', l); } catch (e) {} }
     measure();
   }
 
@@ -350,7 +359,7 @@
     });
 
     document.querySelectorAll('[data-set-lang]').forEach(function (b) {
-      b.addEventListener('click', function () { setLang(b.dataset.setLang); });
+      b.addEventListener('click', function () { setLang(b.dataset.setLang, true); });
     });
     setLang(lang);
 

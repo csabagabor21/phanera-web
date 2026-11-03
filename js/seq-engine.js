@@ -27,7 +27,7 @@
 (function () {
   'use strict';
 
-  var ROOT = 'seq/';
+  var ROOT = '/seq/';
   // Képkocka-verzió: újrarenderelés után emeld meg, különben a böngésző a régi kockákat adja a gyorsítótárból.
   var FRAME_REV = '20261029d';
   var MB = 1048576;

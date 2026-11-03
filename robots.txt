@@ -1,5 +1,4 @@
-# phanera.org – a crawlerek hozzáférhetnek az oldalhoz, hogy lássák a <meta name="robots" content="noindex">-et.
-# Az indexelésről az index.html robots meta-címkéje dönt (jelenleg: noindex, founder-döntésig).
+# phanera.org – minden oldal indexelhető (founder-döntés, 2026-11-03).
 User-agent: *
 Allow: /
 
