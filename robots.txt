@@ -1,0 +1,6 @@
+# phanera.org – a crawlerek hozzáférhetnek az oldalhoz, hogy lássák a <meta name="robots" content="noindex">-et.
+# Az indexelésről az index.html robots meta-címkéje dönt (jelenleg: noindex, founder-döntésig).
+User-agent: *
+Allow: /
+
+Sitemap: https://phanera.org/sitemap.xml

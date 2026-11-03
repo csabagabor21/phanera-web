@@ -1,0 +1,86 @@
+{
+  "hero": {
+    "count": 150,
+    "w": 1600,
+    "h": 900,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "hero@m": {
+    "count": 150,
+    "w": 720,
+    "h": 1000,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "exploded": {
+    "count": 180,
+    "w": 1600,
+    "h": 900,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "exploded@m": {
+    "count": 180,
+    "w": 720,
+    "h": 1000,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "see": {
+    "count": 150,
+    "w": 1600,
+    "h": 900,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "see@m": {
+    "count": 150,
+    "w": 720,
+    "h": 1000,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "treat": {
+    "count": 120,
+    "w": 1600,
+    "h": 900,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "treat@m": {
+    "count": 120,
+    "w": 720,
+    "h": 1000,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "family": {
+    "count": 150,
+    "w": 1600,
+    "h": 900,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "family@m": {
+    "count": 150,
+    "w": 720,
+    "h": 1000,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "finale": {
+    "count": 216,
+    "w": 1600,
+    "h": 900,
+    "ext": "webp",
+    "placeholder": false
+  },
+  "finale@m": {
+    "count": 216,
+    "w": 1080,
+    "h": 1500,
+    "ext": "webp",
+    "placeholder": false
+  }
+}
