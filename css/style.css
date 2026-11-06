@@ -509,8 +509,8 @@ html.rm .display--hero em .w, html.nojs .display--hero em { animation: none; bac
   position: absolute; left: var(--sx); top: var(--sy); width: var(--w);
   transform: translate(calc(-100% * var(--ax)), calc(-100% * var(--ay))) scale(calc(var(--z0) + (var(--z1) - var(--z0)) * var(--p, 1)));
   transform-origin: calc(var(--ax) * 100%) calc(var(--ay) * 100%);
-  will-change: transform;
 }
+.is-live .still, .is-live .detail__media img { will-change: transform; }
 .still img { display: block; width: 100%; height: auto; }
 .copy--still-tl { top: calc(var(--nav-h) + 8vh); max-width: 560px; display: grid; gap: 18px; }
 .copy--still-bl { bottom: 8vh; max-width: 420px; }
@@ -735,3 +735,28 @@ html.nojs .signup__form { display: none; }
   .signup__privacy { padding-top: 18px; }
 }
 /* ======================================================= /HÍRLEVÉL */
+
+/* ================================================================
+   GÖRDÜLÉKENYSÉG (2026-11-06)
+   ================================================================ */
+/* a nézettől távoli jelenetek tartalmát a böngésző nem rendereli (a keresés és a felolvasó így is eléri) */
+html.ready:not(.rm) .stage { content-visibility: auto; }
+/* a hero „színesben” szavának végtelen sodródása csak akkor fut, ha a jelenet a nézet közelében van */
+html.ready .scene:not(.is-live) .display--hero em .w { animation-play-state: paused; }
+
+/* lite mód: iOS, telefon, gyenge eszköz, vagy ha az önmérés akadást lát (a fejléc és a page.js állítja be).
+   A szándék ugyanaz, a drága effektek helyett olcsók: szöveg-blur és üveg-nav nélkül, nyugodtan. */
+html.lite body { text-rendering: auto; }
+html.lite .nav { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(0, 0, 0, .78); }
+html.lite[data-nav="light"] .nav, html.lite[data-nav="white"] .nav { background: rgba(255, 255, 255, .94); }
+html.lite .is-live .w { will-change: auto; }
+html.lite .r-cap { filter: none; }
+@keyframes riseInLite { from { transform: translateY(112%); } }
+html.lite .intro-rise .w { animation-name: riseInLite; }
+html.lite .display--hero em .w { animation: riseInLite 1.5s var(--ease) backwards, heroDevelop 2.4s cubic-bezier(.45, 0, .2, 1) 1.5s forwards; }
+html.lite .stage[data-tone="dark"] .display--hero em { filter: none; }
+/* az előhívás maszk helyett kivágással: a szélét úgyis az ibolya vonal takarja */
+html.lite .develop__ink {
+  -webkit-mask-image: none; mask-image: none;
+  clip-path: inset(0 calc(100% - (var(--s) * 130% - 13%)) 0 0);
+}

@@ -23,13 +23,19 @@
      tétlen időben a közeli képsorok tömörített kockái előre letöltődnek.
    - tartalék: createImageBitmap / fetch hibája esetén <img>.decode(); minden API try/catch mögött.
    - ismételt összeomlás-észlelés (sessionStorage): ha az előző betöltés nem jutott el a pagehide-ig, egy szinttel lejjebb lépünk.
-   - teszteléshez: ?mem=desktop|mobile|webview|still  · statisztika: PhaneraSeq.stats() */
+   - teszteléshez: ?mem=desktop|mobile|webview|still  · statisztika: PhaneraSeq.stats()
+
+   Gördülékenység (v5, 2026-11-06 – iOS / gyenge eszközök, „lite” mód: <html class="lite">, a fejléc állítja be):
+   - a „@” a címben %40-ként megy: különben az éles szerver minden @m-kockát 307-tel irányít át (+1 körút kockánként);
+   - dekódolás háttérszálon (Worker), ha lehet: a főszál nem akad meg; hiba esetén a régi főszálas út fut;
+   - lite módban a vászon nem nagyobb a kocka felbontásánál (a nagyítást a GPU végzi), és nincs drága simítás;
+   - runtime lefelé léptetés: PhaneraSeq.degrade() minden 2. kockára vált, ha a page.js mérése szerint akad az oldal. */
 (function () {
   'use strict';
 
   var ROOT = '/seq/';
   // Képkocka-verzió: újrarenderelés után emeld meg, különben a böngésző a régi kockákat adja a gyorsítótárból.
-  var FRAME_REV = '20261029d';
+  var FRAME_REV = '202611061939';
   var MB = 1048576;
   var DEFAULT_COUNT = 120;
 
@@ -85,6 +91,7 @@
   var FETCH_OK = typeof window.fetch === 'function' && typeof window.Blob === 'function';
   var cibFails = 0, fetchFails = 0;
   var GIF1 = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+  var LITE = document.documentElement.classList.contains('lite');
 
   /* első kocka, utolsó, aztán felező lépésközök: 64, 32, 16, 8, 4, 2, 1 */
   function keyOrder(count, first) {
@@ -127,6 +134,7 @@
     this.ext = (entry && entry.ext) || 'webp';
     this.useMobileSet = this.separateMobile || (!this.procedural && MOBILE && entry.mobile === true);
     this.dir = name + (this.useMobileSet ? '@m' : '');
+    this.base = ROOT + encodeURIComponent(this.dir) + '/f_';   // a nyers „@” az élesben 307-es átirányítás lenne kockánként
     var n = this.count;
     this.frames = new Array(n);
     this.state = new Uint8Array(n);        // 0 nincs · 1 tölt · 2 kész · 3 hiba
@@ -151,7 +159,7 @@
     this.priority = 1e9;                   // (régi API, kompatibilitás)
   }
   Sequence.prototype.url = function (i) {
-    return ROOT + this.dir + '/f_' + pad4(i + 1) + '.' + this.ext + '?v=' + FRAME_REV;
+    return this.base + pad4(i + 1) + '.' + this.ext + '?v=' + FRAME_REV;
   };
   /* ritkított készlet: csak ezek a kockák töltődnek be (az utolsó mindig) */
   Sequence.prototype.allowed = function (i) {
@@ -278,6 +286,52 @@
       img.src = obj || url;
     });
   }
+  /* dekódolás háttérszálon: a Safari a createImageBitmap-et a főszálon futtatja, görgetés közben ez akadásként látszik.
+     Bármilyen hiba (nincs Worker, nem válaszol, nem megy benne a dekódolás) esetén marad a főszálas út. */
+  var DW = {
+    w: null, seq: 0, wait: {}, off: false, fails: 0,
+    start: function () {
+      if (this.off || this.w) return !!this.w;
+      try {
+        var src = 'onmessage=function(e){var d=e.data;(d.r?createImageBitmap(d.b,d.r):createImageBitmap(d.b)).then(function(m){postMessage({i:d.i,m:m},[m])},function(){postMessage({i:d.i})})}';
+        this.w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+        var self = this;
+        this.w.onmessage = function (e) { self.reply(e.data.i, e.data.m); };
+        this.w.onerror = function () { self.kill(); };
+      } catch (e) { this.off = true; this.w = null; }
+      return !!this.w;
+    },
+    reply: function (i, m) {
+      var o = this.wait[i]; if (!o) { dispose(m); return; }
+      delete this.wait[i]; clearTimeout(o.t);
+      if (m) this.fails = 0; else if (++this.fails >= 3) this.kill();
+      o.res(m || null);
+    },
+    kill: function () {
+      this.off = true;
+      try { if (this.w) this.w.terminate(); } catch (e) {}
+      this.w = null;
+      var w = this.wait; this.wait = {};
+      for (var k in w) { clearTimeout(w[k].t); w[k].res(null); }
+    },
+    decode: function (blob, r) {
+      var self = this;
+      return new Promise(function (res) {
+        var i = ++self.seq;
+        self.wait[i] = { res: res, t: setTimeout(function () { self.kill(); }, 5000) };
+        try { self.w.postMessage(r ? { i: i, b: blob, r: r } : { i: i, b: blob }); } catch (e) { self.kill(); }
+      });
+    }
+  };
+  function decodeMain(blob, s, i) {
+    var r = s.resize, p;
+    try { p = r ? window.createImageBitmap(blob, r) : window.createImageBitmap(blob); } catch (e) { p = Promise.reject(e); }
+    if (r) p = p.then(null, function () { return window.createImageBitmap(blob); });  // a resize-opciók nem mindenhol mennek
+    return p.then(function (bm) { cibFails = 0; return bm; }, function () {
+      if (++cibFails >= 3) HAS_CIB = false;                     // korlátozott webview: innentől <img>
+      return decodeImg(blob, s.url(i));
+    });
+  }
   function decode(blob, s, i) {
     if (!HAS_CIB) return decodeImg(blob, s.url(i));
     if (!blob) {   // nincs fetch: <img> URL-ről, majd (ha kell) kicsinyítés bitmapre, hogy a keret ne teljen meg nagy kockákkal
@@ -287,13 +341,8 @@
         return q.then(function (bm) { dispose(img); return bm; }, function () { return img; });
       });
     }
-    var r = s.resize, p;
-    try { p = r ? window.createImageBitmap(blob, r) : window.createImageBitmap(blob); } catch (e) { p = Promise.reject(e); }
-    if (r) p = p.then(null, function () { return window.createImageBitmap(blob); });  // a resize-opciók nem mindenhol mennek
-    return p.then(function (bm) { cibFails = 0; return bm; }, function () {
-      if (++cibFails >= 3) HAS_CIB = false;                     // korlátozott webview: innentől <img>
-      return decodeImg(blob, s.url(i));
-    });
+    if (DW.start()) return DW.decode(blob, s.resize).then(function (m) { return m || decodeMain(blob, s, i); });
+    return decodeMain(blob, s, i);
   }
 
   /* --------------------------------------------------------------- betöltő */
@@ -335,6 +384,7 @@
         s = seqs[k]; s.updateK();
         if (s.loaded) for (i = 0; i < s.count; i++) if (s.state[i] === 2 && s.score(i) === Infinity) this.evict(s, i);
       }
+      if (this.active >= P.par) return;                         // nincs szabad szál: fölösleges a jelöltek rendezése
       // 2) jelöltek fontossági sorrendben
       var cand = [];
       for (k = 0; k < seqs.length; k++) {
@@ -444,23 +494,32 @@
   }
 
   /* ha a kocka nem tölti ki a vásznat, a széleit a jelenet háttérszínébe olvasztjuk */
-  function featherEdges(ctx, r, cw, ch, bg) {
-    var f = Math.min(r.dw, r.dh) * .12;
-    var t = 'rgba(' + bg[0] + ',' + bg[1] + ',' + bg[2] + ',';
-    var g;
-    if (r.dy > 0.5) {
-      ctx.fillStyle = t + '1)'; ctx.fillRect(0, 0, cw, Math.ceil(r.dy)); ctx.fillRect(0, Math.floor(r.dy + r.dh), cw, ch);
-      g = ctx.createLinearGradient(0, r.dy, 0, r.dy + f); g.addColorStop(0, t + '1)'); g.addColorStop(1, t + '0)');
-      ctx.fillStyle = g; ctx.fillRect(0, r.dy, cw, f);
-      g = ctx.createLinearGradient(0, r.dy + r.dh - f, 0, r.dy + r.dh); g.addColorStop(0, t + '0)'); g.addColorStop(1, t + '1)');
-      ctx.fillStyle = g; ctx.fillRect(0, r.dy + r.dh - f, cw, f);
+  function featherEdges(ctx, r, cw, ch, bg, cache) {
+    // a rajzlista kockánként ugyanaz: csak akkor építjük újra, ha változott a geometria vagy a háttérszín
+    var key = r.dx + '|' + r.dy + '|' + r.dw + '|' + r.dh + '|' + cw + '|' + ch + '|' + bg.join();
+    if (cache.key !== key) {
+      var f = Math.min(r.dw, r.dh) * .12;
+      var t = 'rgba(' + bg[0] + ',' + bg[1] + ',' + bg[2] + ',';
+      var g, L = [], solid = t + '1)';
+      if (r.dy > 0.5) {
+        L.push([solid, 0, 0, cw, Math.ceil(r.dy)], [solid, 0, Math.floor(r.dy + r.dh), cw, ch]);
+        g = ctx.createLinearGradient(0, r.dy, 0, r.dy + f); g.addColorStop(0, solid); g.addColorStop(1, t + '0)');
+        L.push([g, 0, r.dy, cw, f]);
+        g = ctx.createLinearGradient(0, r.dy + r.dh - f, 0, r.dy + r.dh); g.addColorStop(0, t + '0)'); g.addColorStop(1, solid);
+        L.push([g, 0, r.dy + r.dh - f, cw, f]);
+      }
+      if (r.dx > 0.5) {
+        L.push([solid, 0, 0, Math.ceil(r.dx), ch], [solid, Math.floor(r.dx + r.dw), 0, cw, ch]);
+        g = ctx.createLinearGradient(r.dx, 0, r.dx + f, 0); g.addColorStop(0, solid); g.addColorStop(1, t + '0)');
+        L.push([g, r.dx, 0, f, ch]);
+        g = ctx.createLinearGradient(r.dx + r.dw - f, 0, r.dx + r.dw, 0); g.addColorStop(0, t + '0)'); g.addColorStop(1, solid);
+        L.push([g, r.dx + r.dw - f, 0, f, ch]);
+      }
+      cache.key = key; cache.list = L;
     }
-    if (r.dx > 0.5) {
-      ctx.fillStyle = t + '1)'; ctx.fillRect(0, 0, Math.ceil(r.dx), ch); ctx.fillRect(Math.floor(r.dx + r.dw), 0, cw, ch);
-      g = ctx.createLinearGradient(r.dx, 0, r.dx + f, 0); g.addColorStop(0, t + '1)'); g.addColorStop(1, t + '0)');
-      ctx.fillStyle = g; ctx.fillRect(r.dx, 0, f, ch);
-      g = ctx.createLinearGradient(r.dx + r.dw - f, 0, r.dx + r.dw, 0); g.addColorStop(0, t + '0)'); g.addColorStop(1, t + '1)');
-      ctx.fillStyle = g; ctx.fillRect(r.dx + r.dw - f, 0, f, ch);
+    for (var i = 0; i < cache.list.length; i++) {
+      var o = cache.list[i];
+      ctx.fillStyle = o[0]; ctx.fillRect(o[1], o[2], o[3], o[4]);
     }
   }
 
@@ -480,6 +539,7 @@
     this.cw = 0; this.ch = 0; this.dpr = 1;
     this.tw = 0; this.th = 0;            // a kívánt háttértár-méret (parkolt vásznon is számoljuk)
     this.parked = true;                  // amíg a képsor hideg, nincs teljes méretű háttértár
+    this.feather = {};
     try { canvas.width = 1; canvas.height = 1; } catch (e) {}
     this.lastDrawn = -2;
     this.dirty = true;
@@ -532,6 +592,11 @@
       var dpr = Math.min(window.devicePixelRatio || 1, P.dpr);
       var px = r.width * r.height * dpr * dpr;
       if (px > P.maxPx) dpr *= Math.sqrt(P.maxPx / px);   // a háttértár pixelszámra is korlátos
+      // lite: a vászon nem nagyobb a kocka felbontásánál – a nagyítást a GPU végzi (fele annyi pixel, 1:1 rajzolás)
+      if (LITE && !this.seq.procedural) {
+        var cssW = this.fit(r.width, r.height).dw;
+        if (cssW > 0) dpr = Math.min(dpr, this.seq.fw / cssW);
+      }
       this.dpr = dpr;
       this.tw = Math.max(1, Math.round(r.width * dpr)); this.th = Math.max(1, Math.round(r.height * dpr));
       if (!this.parked && (this.tw !== this.cw || this.th !== this.ch)) {
@@ -583,10 +648,10 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (rr.dx > 0 || rr.dy > 0) { ctx.fillStyle = 'rgb(' + this.bg.join(',') + ')'; ctx.fillRect(0, 0, this.cw, this.ch); }
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingQuality = LITE ? 'low' : 'high';
     try { ctx.drawImage(img, rr.dx, rr.dy, rr.dw, rr.dh); }
     catch (e) { Loader.evict(s, j); this.dirty = true; return; }   // pl. közben lezárt bitmap: a következő képkockán újra
-    featherEdges(ctx, rr, this.cw, this.ch, this.bg);
+    featherEdges(ctx, rr, this.cw, this.ch, this.bg, this.feather);
     this.shownIdx = j; this.lastDrawn = idx; this.dirty = false;
     if (!this.sampled) this.sampleEdge(img);
   };
@@ -620,7 +685,16 @@
     Loader.seqs.forEach(function (s) { frames += s.loaded; perSeq[s.dir] = s.loaded; });
     return { tier: TIER, budgetMB: Math.round(P.budget / MB), frames: frames, bytes: Loader.used, peakMB: Math.round(Loader.peak / MB),
              reservedMB: Math.round(Loader.reserved / MB), blobMB: +(Blobs.bytes / MB).toFixed(1), started: Loader.started,
-             evicted: Loader.evicted, perSeq: perSeq, cib: HAS_CIB, fetch: FETCH_OK, crashes: CRASHES, inapp: INAPP, dm: DM };
+             evicted: Loader.evicted, perSeq: perSeq, cib: HAS_CIB, fetch: FETCH_OK, crashes: CRASHES, inapp: INAPP, dm: DM,
+             lite: LITE, worker: !!DW.w, sub: Loader.seqs.length ? Loader.seqs[0].sub : 1 };
+  }
+
+  /* a page.js hívja, ha mérés szerint akad az oldal: 1. szint – lite vászon, 2. szint – minden 2. kocka */
+  function setLite() { LITE = true; }
+  function degrade() {
+    P.sub = Math.max(P.sub, 2);
+    Loader.seqs.forEach(function (s) { if (!s.still) s.sub = Math.max(s.sub, 2); });
+    Loader.pump();
   }
 
   window.PhaneraSeq = {
@@ -633,6 +707,8 @@
     Player: Player,
     Loader: Loader,
     keyOrder: keyOrder,
+    setLite: setLite,
+    degrade: degrade,
     stats: stats
   };
 })();

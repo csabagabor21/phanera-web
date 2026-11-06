@@ -18,6 +18,7 @@
   var SEQ = window.PhaneraSeq;
   var doc = document.documentElement;
   var RM = doc.classList.contains('rm');
+  var LITE = doc.classList.contains('lite');   // iOS / mobil / gyenge eszköz: nincs görgetés közbeni blur (a fejléc állítja be)
   var TAU = 0.11;                         // simítás időállandója (s)
   var NAV_H = 52;
 
@@ -99,6 +100,8 @@
       var v = nums(e.dataset.step);
       return { el: e, a: v[0], b: v[1], c: v.length > 2 ? v[2] : 9, d: v.length > 3 ? v[3] : 10, last: -1 };
     });
+    // a --p csak oda megy, ahol tényleg használjuk: a stage-re írva minden leszármazott stílusát újraszámolná kockánként
+    this.pEls = Array.prototype.slice.call(el.querySelectorAll('.still, .develop, .detail__media img, .tv-plasma'));
     var nh = el.dataset.navHide ? nums(el.dataset.navHide) : null;
     this.navHide = nh;
     this.player = null;
@@ -108,7 +111,11 @@
   Scene.prototype.apply = function (p, force) {
     var i, o;
     // v3: a jelenet progressze CSS-változóként is (állóképek lassú közelítése, „előhívás”)
-    if (force || Math.abs(p - this.lastP) > .0015) { this.lastP = p; this.stage.style.setProperty('--p', p.toFixed(4)); }
+    if (this.pEls.length && (force || Math.abs(p - this.lastP) > (LITE ? .003 : .0015))) {
+      this.lastP = p;
+      var ps = p.toFixed(4);
+      for (i = 0; i < this.pEls.length; i++) this.pEls[i].style.setProperty('--p', ps);
+    }
     for (i = 0; i < this.anims.length; i++) {
       o = this.anims[i];
       var up = o.b <= o.a ? (p >= o.a ? 1 : 0) : easeOut((p - o.a) / (o.b - o.a));
@@ -120,8 +127,9 @@
       var y = entering ? (1 - up) * 14 : -(1 - dn) * 10;   // márkakönyv: 8–16 px emelkedés
       var blur = entering ? (1 - up) * 8 : (1 - dn) * 5;
       o.el.style.opacity = v.toFixed(3);
-      o.el.style.transform = v >= .999 ? 'none' : 'translate3d(0,' + y.toFixed(2) + 'px,0) scale(' + (.985 + .015 * v).toFixed(4) + ')';
-      o.el.style.filter = v >= .999 || v <= .001 ? 'none' : 'blur(' + blur.toFixed(2) + 'px)';
+      // nyugalmi állapotban (teljesen látható / rejtett) nincs 3D-transzform, így nincs fölösleges kompozit réteg sem
+      o.el.style.transform = v >= .999 || v <= .001 ? 'none' : 'translate3d(0,' + y.toFixed(2) + 'px,0) scale(' + (.985 + .015 * v).toFixed(4) + ')';
+      if (!LITE) o.el.style.filter = v >= .999 || v <= .001 ? 'none' : 'blur(' + blur.toFixed(2) + 'px)';
       o.el.style.visibility = v <= .001 ? 'hidden' : '';
     }
     for (i = 0; i < this.rises.length; i++) applyRise(this.rises[i], p, force);
@@ -150,44 +158,65 @@
     var key = Math.round(p * 2000) + dn;
     if (!force && key === r.last) return;
     r.last = key;
-    var list = r.words.filter(function (w) { return !w.lang || w.lang === lang; });
+    var list = langWords(r);
     var n = list.length, span = r.b - r.a, dur = span * (n > 1 ? .62 : 1), lag = n > 1 ? (span - dur) / (n - 1) : 0;
-    list.forEach(function (w, i) {
+    for (var i = 0; i < n; i++) {
+      var w = list[i];
       var v = r.b <= r.a ? (p >= r.a ? 1 : 0) : easeOut((p - r.a - lag * i) / dur);
-      if (Math.abs(v - w.last) < .002 && !force) return;
+      if (Math.abs(v - w.last) < .002 && !force) continue;
       w.last = v;
-      w.el.style.transform = v >= .999 ? 'none' : 'translate3d(0,' + ((1 - v) * 112).toFixed(2) + '%,0)';
-      w.el.style.filter = v >= .999 ? 'none' : 'blur(' + ((1 - v) * 7).toFixed(2) + 'px)';
-    });
+      w.el.style.transform = v >= .999 ? 'none' : v <= .001 ? 'translateY(112%)' : 'translate3d(0,' + ((1 - v) * 112).toFixed(2) + '%,0)';
+      if (!LITE) w.el.style.filter = v >= .999 ? 'none' : 'blur(' + ((1 - v) * 7).toFixed(2) + 'px)';
+    }
     r.el.style.opacity = dn.toFixed(3);
-    r.el.style.filter = dn >= .999 || dn <= .001 ? 'none' : 'blur(' + ((1 - dn) * 6).toFixed(2) + 'px)';
+    if (!LITE) r.el.style.filter = dn >= .999 || dn <= .001 ? 'none' : 'blur(' + ((1 - dn) * 6).toFixed(2) + 'px)';
     r.el.style.transform = dn >= .999 ? 'none' : 'translate3d(0,' + (-(1 - dn) * 18).toFixed(2) + 'px,0)';
     r.el.style.visibility = dn <= .001 || p < r.a ? 'hidden' : '';
   }
 
+  /* az aktuális nyelv szavai – kockánként nem szűrünk újra (kevesebb szemét, kevesebb GC-akadás iOS-en) */
+  function langWords(g) {
+    if (g.listLang !== lang) {
+      g.listLang = lang; g.layout = false;
+      g.list = g.words.filter(function (w) { return !w.lang || w.lang === lang; });
+    }
+    return g.list;
+  }
+
   function applyWords(grp, p, force) {
-    var list = grp.words.filter(function (w) { return !w.lang || w.lang === lang; });
-    // a sortörés plusz szünetet kap: a mondat két fele külön lélegzik
-    var slots = [], slot = 0, prevLine = null;
-    list.forEach(function (w, i) {
-      if (i > 0 && w.line && w.line !== prevLine) slot += 1.6;
-      slots.push(slot); slot += 1; prevLine = w.line;
-    });
-    var total = Math.max(1, slot), span = grp.b - grp.a;
-    var dur = grp.kind === 'light' ? span / total * 5 : span / total * 2.4;
-    list.forEach(function (w, i) {
-      var start = grp.a + span * (slots[i] / total) - (grp.kind === 'light' ? dur * .5 : 0);
-      var v = smooth((p - start) / dur);
-      if (!force && Math.abs(v - w.last) < .003) return;
+    var list = langWords(grp), i, w;
+    if (!grp.layout) {
+      grp.layout = true;
+      // a sortörés plusz szünetet kap: a mondat két fele külön lélegzik
+      var slots = [], slot = 0, prevLine = null;
+      list.forEach(function (w, i) {
+        if (i > 0 && w.line && w.line !== prevLine) slot += 1.6;
+        slots.push(slot); slot += 1; prevLine = w.line;
+      });
+      var total = Math.max(1, slot), span = grp.b - grp.a;
+      grp.dur = grp.kind === 'light' ? span / total * 5 : span / total * 2.4;
+      grp.starts = slots.map(function (sl) { return grp.a + span * (sl / total) - (grp.kind === 'light' ? grp.dur * .5 : 0); });
+      grp.settled = 0;
+    }
+    if (!list.length) return;
+    // a sávján kívül minden szó nyugalomban van: ha egyszer már odaért, nincs teendő
+    var side = p <= grp.starts[0] ? -1 : p >= grp.starts[list.length - 1] + grp.dur ? 1 : 0;
+    if (!force && side !== 0 && side === grp.settled) return;
+    grp.settled = side;
+    for (i = 0; i < list.length; i++) {
+      w = list[i];
+      var v = smooth((p - grp.starts[i]) / grp.dur);
+      if (!force && Math.abs(v - w.last) < .003 && v !== 0 && v !== 1) continue;
+      if (!force && v === w.last) continue;
       w.last = v;
       if (grp.kind === 'light') {
         w.el.style.opacity = (.16 + .84 * v).toFixed(3);
       } else {
         w.el.style.opacity = v.toFixed(3);
-        w.el.style.transform = v >= .999 ? 'none' : 'translate3d(0,' + ((1 - v) * .28).toFixed(3) + 'em,0)';
-        if (grp.blur) w.el.style.filter = v >= .999 ? 'none' : 'blur(' + ((1 - v) * 9).toFixed(2) + 'px)';
+        w.el.style.transform = v >= .999 || v <= .001 ? 'none' : 'translate3d(0,' + ((1 - v) * .28).toFixed(3) + 'em,0)';
+        if (grp.blur && !LITE) w.el.style.filter = v >= .999 ? 'none' : 'blur(' + ((1 - v) * 9).toFixed(2) + 'px)';
       }
-    });
+    }
   }
 
   /* ------------------------------------------------------------- mérések */
@@ -212,7 +241,7 @@
   }
 
   /* ------------------------------------------------------------ rAF hurok */
-  var running = false, lastT = 0, settle = 0, forceNext = false, snap = false;
+  var running = false, lastT = 0, settle = 0, forceNext = false, forceAll = false, snap = false;
   var lastPrioT = 0, lastNav = '', lastHide = false;
   function kick(force) {
     if (force) forceNext = true;
@@ -221,11 +250,13 @@
 
   function loop(t) {
     var dt = lastT ? Math.min(.1, (t - lastT) / 1000) : 1 / 60;
+    if (lastT) govern(t - lastT);
     lastT = t;
     var y = window.scrollY;
     var k = 1 - Math.exp(-dt / TAU);
     var moving = false;
     var force = forceNext; forceNext = false;
+    var all = forceAll; forceAll = false;   // minden jelenet újraírása csak induláskor és nyelvváltáskor kell
 
     for (var i = 0; i < scenes.length; i++) {
       var s = scenes[i];
@@ -237,10 +268,11 @@
         if (Math.abs(d) < 1e-4) s.cur = raw; else { s.cur += d * k; moving = true; }
       }
       // will-change (külön réteg a szavaknak) csak a nézet közelében lévő jelenetben – a többi nem foglal rétegmemóriát
-      var live = y + vh * 1.6 > s.top && y - vh * .6 < s.top + s.height;
+      var live = LITE ? y + vh * 1.1 > s.top && y - vh * .1 < s.top + s.height
+                      : y + vh * 1.6 > s.top && y - vh * .6 < s.top + s.height;
       if (live !== s.live) { s.live = live; s.el.classList.toggle('is-live', live); }
       var visible = y + vh > s.top - 2 && y < s.top + s.height + 2;
-      if (!visible && !force) continue;
+      if (!visible && !all) continue;
       try {
         if (s.player && (visible || !s.player.parked)) {   // parkolt (hideg) vásznat nem ébresztünk fel feleslegesen
           var fp = RM ? s.staticP : (s.hold > 0 ? clamp(s.cur / (1 - s.hold), 0, 1) : s.cur);
@@ -273,10 +305,36 @@
     requestAnimationFrame(loop);
   }
 
-  var lastPrioY = -1, scrollDir = 1;
+  /* önmérés görgetés közben: ha sok a hosszú képkocka, lépcsőnként lejjebb adunk a látványból (nem csak iOS-en: gyenge laptopon is).
+     1. szint: lite mód (blur, nav-üveg, hero-dereng ki; kisebb vászon) · 2. szint: minden 2. kocka.
+     A szint a munkamenetre megmarad, hogy újratöltés után ne kelljen újra akadnia. */
+  var GOV_KEY = 'phanera-perf', govLevel = 0, govN = 0, govSlow = 0, govGrace = 0;
+  function govern(ms) {
+    if (RM || !lastPrioMoved || ms > 400) return;   // csak görgetés közben; a háttérből visszatérő hosszú szünet nem számít
+    if (govGrace > 0) { govGrace--; return; }
+    govN++; if (ms > 30) govSlow++;
+    if (govN < 90) return;
+    if (govSlow / govN > .3 && govLevel < 2) setPerfLevel(govLevel + 1, true);
+    govN = govSlow = 0;
+  }
+  function setPerfLevel(l, save) {
+    govLevel = l; govGrace = 60;
+    if (l >= 1 && !LITE) {
+      LITE = true; doc.classList.add('lite');
+      if (SEQ) SEQ.setLite();
+      // a korábban beírt blur-ök eltávolítása, a vászon újramérése
+      document.querySelectorAll('[data-a], [data-rise], .w').forEach(function (e) { e.style.filter = ''; });
+      scenes.forEach(function (s) { if (s.player) s.player.measure(); });
+    }
+    if (l >= 2 && SEQ) SEQ.degrade();
+    if (save) { try { sessionStorage.setItem(GOV_KEY, String(l)); } catch (e) {} }
+  }
+
+  var lastPrioY = -1, scrollDir = 1, lastPrioMoved = false;
   function updatePriorities(y) {
     try {
-      if (lastPrioY >= 0 && y !== lastPrioY) scrollDir = y > lastPrioY ? 1 : -1;
+      lastPrioMoved = lastPrioY >= 0 && y !== lastPrioY;
+      if (lastPrioMoved) scrollDir = y > lastPrioY ? 1 : -1;
       lastPrioY = y;
       scenes.forEach(function (s) {
         if (!s.player) return;
@@ -308,6 +366,7 @@
     } catch (e) {}
     document.querySelectorAll('[data-alt-hu]').forEach(function (im) { im.alt = im.getAttribute('data-alt-' + l) || im.alt; });
     if (byUser) { try { localStorage.setItem('phanera-lang', l); } catch (e) {} }
+    forceAll = true;
     measure();
   }
 
@@ -375,15 +434,24 @@
 
     window.addEventListener('scroll', function () { kick(); }, { passive: true });
     if (SEQ) SEQ.Loader.onresume = function () { scenes.forEach(function (s) { if (s.player) s.player.dirty = true; }); kick(true); };
-    var rT;
-    window.addEventListener('resize', function () { clearTimeout(rT); rT = setTimeout(measure, 80); });
+    var rT, lastW = window.innerWidth;
+    window.addEventListener('resize', function () {
+      // iOS / Android: a címsor be- és kicsúszása csak a magasságot változtatja, görgetés közben.
+      // A jelenetek vh-ban, a stage svh-ban mért, tehát nem mozdulnak: nem kell a teljes újramérés (ez kényszerített elrendezés).
+      var w = window.innerWidth;
+      if (w === lastW && Math.abs(window.innerHeight - vh) < 160 && LITE) { vh = window.innerHeight; return; }
+      lastW = w;
+      clearTimeout(rT); rT = setTimeout(measure, 80);
+    });
     if ('ResizeObserver' in window) {
       var ro = new ResizeObserver(function () { clearTimeout(rT); rT = setTimeout(measure, 80); });
       ro.observe(document.body);
     }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 
+    forceAll = true;
     measure();
+    try { var gl = /[?&]lite=0\b/.test(location.search) ? 0 : +sessionStorage.getItem(GOV_KEY) || 0; if (gl) setPerfLevel(gl, false); } catch (e) {}
     doc.classList.add('ready');
     debugJump();
     updatePriorities(window.scrollY);

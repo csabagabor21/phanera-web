@@ -24,7 +24,7 @@
 <meta property="og:url" content="https://phanera.org/">
 <meta property="og:title" content="Phanera One. A láthatatlan, színesben.">
 <meta property="og:description" content="Kézi kutatási prototípus: 405 nm-es ibolyafényben megmutatja a baktériumok fluoreszcenciáját. A hideg plazma fejlesztés alatt. Nem orvostechnikai eszköz.">
-<meta property="og:image" content="https://phanera.org/img/brand/og_phanera_1200x630.png?v=20261028m">
+<meta property="og:image" content="https://phanera.org/img/brand/og_phanera_1200x630.png?v=202611061939">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -32,7 +32,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Phanera One. A láthatatlan, színesben.">
 <meta name="twitter:description" content="Kézi kutatási prototípus: 405 nm-es ibolyafényben megmutatja a baktériumok fluoreszcenciáját. A hideg plazma fejlesztés alatt. Nem orvostechnikai eszköz.">
-<meta name="twitter:image" content="https://phanera.org/img/brand/og_phanera_1200x630.png?v=20261028m">
+<meta name="twitter:image" content="https://phanera.org/img/brand/og_phanera_1200x630.png?v=202611061939">
 <meta name="twitter:image:alt" content="Phanera One oldalnézetből, rajta egy királylepke. Felette: First see. Then barely touch.">
 <script type="application/ld+json">
 {
@@ -70,7 +70,7 @@
 </script>
 <link rel="preload" href="/fonts/InstrumentSans-VF.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/Newsreader-Italic-VF.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/css/style.css?v=20261103u">
+<link rel="stylesheet" href="/css/style.css?v=20261106a">
 <script>
   // korai beállítás: JS van, csökkentett mozgás, nyelv (villanás nélkül).
   // Az /en/ URL mindig angol (a keresők ezt indexelik); a gyökérben a mentett nyelvválasztás érvényes.
@@ -78,6 +78,14 @@
     var d = document.documentElement;
     d.classList.remove('nojs');
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('rm');
+    // lite mód (iOS, telefon, kevés memória / mag, adatkímélés): a drága görgetési effektek nélkül. Teszt: ?lite=0 / ?lite=1
+    try {
+      var n = navigator, q = /[?&]lite=([01])\b/.exec(location.search), ua = n.userAgent || '';
+      var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && n.maxTouchPoints > 1);
+      var weak = ios || matchMedia('(max-width: 820px), (pointer: coarse) and (max-width: 1100px)').matches ||
+                 n.deviceMemory <= 4 || n.hardwareConcurrency <= 4 || (n.connection && n.connection.saveData);
+      if (q ? q[1] === '1' : weak) d.classList.add('lite');
+    } catch (e) {}
     if (d.getAttribute('data-page-lang') === 'en') return;
     try { var l = localStorage.getItem('phanera-lang'); if (l === 'en') { d.dataset.lang = l; d.lang = l; } } catch (e) {}
   })();
@@ -272,8 +280,8 @@
     <!-- ERINTES:BEGIN (render/erintes_3d/make_overlay.py generálja – ne kézzel) -->
     <div class="touch-fig"><figure class="touch-media" data-a=".08 .22">
     <picture>
-      <source media="(max-width: 820px)" srcset="/img/erintes_m@800.webp?v=20261103c 800w, /img/erintes_m.webp?v=20261103c 1200w" sizes="100vw" width="1200" height="1080">
-      <img src="/img/erintes_d.webp?v=20261103c" srcset="/img/erintes_d@1600.webp?v=20261103c 1600w, /img/erintes_d.webp?v=20261103c 2400w" sizes="(max-width: 1200px) 94vw, 1100px" width="2400" height="1000" alt="Render: a Phanera One 65°-os szögben áll egy stilizált, meleg tónusú felszín fölött. A távtartó sapka (itt félbevágva) a felszínen ül; a fúvóka és a felszín között rés marad." data-alt-hu="Render: a Phanera One 65°-os szögben áll egy stilizált, meleg tónusú felszín fölött. A távtartó sapka (itt félbevágva) a felszínen ül; a fúvóka és a felszín között rés marad." data-alt-en="Render: Phanera One held at 65° above a stylised, warm-toned surface. The spacer cap (shown cut away) rests on the surface; a gap remains between the nozzle and the surface." loading="lazy" decoding="async">
+      <source media="(max-width: 820px)" srcset="/img/erintes_m%40800.webp?v=20261103c 800w, /img/erintes_m.webp?v=20261103c 1200w" sizes="100vw" width="1200" height="1080">
+      <img src="/img/erintes_d.webp?v=20261103c" srcset="/img/erintes_d%401600.webp?v=20261103c 1600w, /img/erintes_d.webp?v=20261103c 2400w" sizes="(max-width: 1200px) 94vw, 1100px" width="2400" height="1000" alt="Render: a Phanera One 65°-os szögben áll egy stilizált, meleg tónusú felszín fölött. A távtartó sapka (itt félbevágva) a felszínen ül; a fúvóka és a felszín között rés marad." data-alt-hu="Render: a Phanera One 65°-os szögben áll egy stilizált, meleg tónusú felszín fölött. A távtartó sapka (itt félbevágva) a felszínen ül; a fúvóka és a felszín között rés marad." data-alt-en="Render: Phanera One held at 65° above a stylised, warm-toned surface. The spacer cap (shown cut away) rests on the surface; a gap remains between the nozzle and the surface." loading="lazy" decoding="async">
     </picture>
     <svg class="touch-ov touch-ov--d" viewBox="0 0 2400 1000" aria-hidden="true" focusable="false">
       <ellipse class="tv-plasma" cx="1416" cy="639.1" rx="75.7" ry="42.1" transform="rotate(64.8 1416 639.1)"/>
@@ -317,7 +325,7 @@
 <section class="scene scene--face scene--still t-white" id="arc" style="--len:250" data-scene="face" data-nav="light">
   <div class="stage">
     <div class="still" style="--ax:.29; --ay:.48; --sx:60%; --sy:58%; --w:108vw; --sx-m:50%; --sy-m:63%; --w-m:240vw; --z0:1.08; --z1:1">
-      <img src="/img/g3_face.webp" srcset="/img/g3_face@m.webp 1000w, /img/g3_face.webp 2000w" sizes="(max-width: 820px) 240vw, 108vw" width="2000" height="1125" alt="A Phanera One feje közelről: fehér cirkónia arclemez, kerek zafír kameraablak, mellette fénypontok, alatta a fúvóka." loading="lazy" decoding="async" fetchpriority="low">
+      <img src="/img/g3_face.webp" srcset="/img/g3_face%40m.webp 1000w, /img/g3_face.webp 2000w" sizes="(max-width: 820px) 240vw, 108vw" width="2000" height="1125" alt="A Phanera One feje közelről: fehér cirkónia arclemez, kerek zafír kameraablak, mellette fénypontok, alatta a fúvóka." loading="lazy" decoding="async" fetchpriority="low">
     </div>
     <div class="copy copy--still-tl scrim-top">
       <h2 class="headline" data-rise=".04 .16"><span data-l="hu" lang="hu">Nézz a&nbsp;szemébe.</span><span data-l="en" lang="en">Look it in the eye.</span></h2>
@@ -337,7 +345,7 @@
         <h2 class="headline" data-rise=".04 .16"><span data-l="hu" lang="hu">Az üveg közvetlenül a&nbsp;fémben ül.</span><span data-l="en" lang="en">Glass, set right into the metal.</span></h2>
       </div>
       <figure class="detail__media" data-a=".02 .14">
-        <img src="/img/g3_display_crop.webp?v=2" srcset="/img/g3_display_crop@m.webp?v=2 1000w, /img/g3_display_crop.webp?v=2 2000w" sizes="(max-width: 820px) 100vw, 60vw" width="2000" height="1333" alt="A Phanera One teteje közelről: fekete üvegkijelző közvetlenül az alumíniumban, bal szélén a haptikus mélyedés." loading="lazy" decoding="async" fetchpriority="low">
+        <img src="/img/g3_display_crop.webp?v=2" srcset="/img/g3_display_crop%40m.webp?v=2 1000w, /img/g3_display_crop.webp?v=2 2000w" sizes="(max-width: 820px) 100vw, 60vw" width="2000" height="1333" alt="A Phanera One teteje közelről: fekete üvegkijelző közvetlenül az alumíniumban, bal szélén a haptikus mélyedés." loading="lazy" decoding="async" fetchpriority="low">
       </figure>
       <div class="detail__meta">
         <p class="headline headline--sm" data-rise=".2 .32"><span data-l="hu" lang="hu">Nincs rés, ahol a&nbsp;szennyeződés megülhet.</span><span data-l="en" lang="en">No gap for dirt to settle in.</span></p>
@@ -356,7 +364,7 @@
         <p class="body" data-a=".12 .24"><span data-l="hu" lang="hu">Csak egy 8&nbsp;mm-es mélyedés a&nbsp;fémben. Megnyomod: a&nbsp;fal a&nbsp;mikron töredékével enged, egy apró motor pedig kattanással válaszol.</span><span data-l="en" lang="en">An 8&nbsp;mm dimple in the metal. Press it: the wall gives a fraction of a micron, and a tiny motor answers with a click.</span></p>
       </div>
       <figure class="detail__media" data-a=".02 .14">
-        <img src="/img/g3_dimple_crop.webp" srcset="/img/g3_dimple_crop@m.webp 1000w, /img/g3_dimple_crop.webp 1930w" sizes="(max-width: 820px) 100vw, 60vw" width="1930" height="926" alt="Makrófotó a fémbe nyomott, sekély mélyedésről, súroló fényben; mögötte a kijelző üvege." loading="lazy" decoding="async" fetchpriority="low">
+        <img src="/img/g3_dimple_crop.webp" srcset="/img/g3_dimple_crop%40m.webp 1000w, /img/g3_dimple_crop.webp 1930w" sizes="(max-width: 820px) 100vw, 60vw" width="1930" height="926" alt="Makrófotó a fémbe nyomott, sekély mélyedésről, súroló fényben; mögötte a kijelző üvege." loading="lazy" decoding="async" fetchpriority="low">
       </figure>
       <div class="detail__meta">
         <p class="headline headline--sm" data-rise=".42 .54"><span data-l="hu" lang="hu">Eggyel kevesebb nyílás. <span class="soft">Eggyel kevesebb tömítés.</span></span><span data-l="en" lang="en">One fewer hole. <span class="soft">One fewer seal.</span></span></p>
@@ -392,7 +400,7 @@
       <p class="body" data-a=".1 .22"><span data-l="hu" lang="hu">Zárt test, letörölhető fej. Alkoholos áttörlésre készült.</span><span data-l="en" lang="en">A sealed body and a wipe-clean head. Designed for alcohol wipes.</span></p>
     </div>
     <div class="still still--side" style="--ax:.5; --ay:.5; --sx:50%; --sy:58%; --w:94vw; --sx-m:50%; --sy-m:52%; --w-m:100vw; --z0:1; --z1:1">
-      <img src="/img/g3_side.webp" srcset="/img/g3_side@m.webp 1000w, /img/g3_side.webp 2000w" sizes="(max-width: 820px) 150vw, 94vw" width="2000" height="1125" alt="A Phanera One oldalnézetből: ferde cirkónia arc, ezüst alumínium test, grafit gerinc, sötét végsapka." loading="lazy" decoding="async" fetchpriority="low">
+      <img src="/img/g3_side.webp" srcset="/img/g3_side%40m.webp 1000w, /img/g3_side.webp 2000w" sizes="(max-width: 820px) 150vw, 94vw" width="2000" height="1125" alt="A Phanera One oldalnézetből: ferde cirkónia arc, ezüst alumínium test, grafit gerinc, sötét végsapka." loading="lazy" decoding="async" fetchpriority="low">
       <ol class="callouts">
         <li class="callouts__start" style="--cx:6.5%; --cy:44%"><span class="callouts__t" data-a=".26 .36"><span data-l="hu" lang="hu">Arc · cirkónia</span><span data-l="en" lang="en">Face · zirconia</span></span></li>
         <li style="--cx:68%; --cy:42%"><span class="callouts__t" data-a=".3 .4"><span data-l="hu" lang="hu">Test · alumínium</span><span data-l="en" lang="en">Body · aluminium</span></span></li>
@@ -577,8 +585,8 @@
 </footer>
 
 <script src="/js/placeholder.js?v=20261103b" defer></script>
-<script src="/js/seq-engine.js?v=20261103a" defer></script>
-<script src="/js/page.js?v=20261103b" defer></script>
+<script src="/js/seq-engine.js?v=202611061939" defer></script>
+<script src="/js/page.js?v=20261106a" defer></script>
 <script src="/js/newsletter.js?v=20261103nl" defer></script>
 </body>
 </html>
