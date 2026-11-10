@@ -101,7 +101,7 @@
       return { el: e, a: v[0], b: v[1], c: v.length > 2 ? v[2] : 9, d: v.length > 3 ? v[3] : 10, last: -1 };
     });
     // a --p csak oda megy, ahol tényleg használjuk: a stage-re írva minden leszármazott stílusát újraszámolná kockánként
-    this.pEls = Array.prototype.slice.call(el.querySelectorAll('.still, .develop, .detail__media img, .tv-plasma'));
+    this.pEls = Array.prototype.slice.call(el.querySelectorAll('.still, .develop, .detail__media img'));
     var nh = el.dataset.navHide ? nums(el.dataset.navHide) : null;
     this.navHide = nh;
     this.player = null;

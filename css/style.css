@@ -498,9 +498,6 @@ html.rm .display--hero em .w, html.nojs .display--hero em { animation: none; bac
 .touch-ov .tv-lab { font-family: var(--sans); fill: var(--ink); letter-spacing: -.01em; font-weight: 450; }
 .touch-ov .tv-lab--muted { fill: var(--ink-2); }
 .touch-ov .tv-fig { font-family: var(--sans); fill: var(--ink); font-weight: 450; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.touch-ov .tv-plasma { fill: var(--violet);
-  opacity: calc(.06 + .12 * var(--p, 1)); }
-.touch-ov .tv-plasma--spot { opacity: calc(.08 + .16 * var(--p, 1)); }
 .copy--touch-foot { bottom: 7vh; display: grid; justify-items: center; text-align: center; gap: 14px; }
 .copy--touch-foot .body { max-width: 30em; }
 
